@@ -1,0 +1,732 @@
+/* Base Styles */
+:root {
+  --primary-color: #2e7d32;
+  --secondary-color: #4caf50;
+  --accent-color: #8bc34a;
+  --text-color: #333;
+  --light-bg: #f5f5f5;
+  --white: #ffffff;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --sidebar-width: 250px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Prevent any page content from affecting sidebar */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  background-color: var(--light-bg);
+  line-height: 1.6;
+  font-size: 18px; /* Increased base font size from default 16px */
+}
+
+/* Layout */
+.App {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  contain: layout style; /* Prevent layout recalculation */
+  will-change: auto; /* Optimize rendering */
+}
+
+.content-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidebar-width) !important; /* Sidebar width */
+  width: calc(100vw - var(--sidebar-width)) !important; /* Ensure proper width calculation */
+  max-width: calc(100vw - var(--sidebar-width)) !important;
+  overflow-x: hidden;
+  contain: layout; /* Prevent layout shifts */
+  position: relative !important;
+  z-index: 1 !important; /* Below sidebar but above background */
+}
+
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  margin: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  contain: content; /* Prevent content from affecting layout */
+  isolation: isolate; /* Create new stacking context */
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width) !important;
+  min-width: var(--sidebar-width) !important;
+  max-width: var(--sidebar-width) !important;
+  background: var(--primary-color) !important;
+  color: white !important;
+  padding: 1.5rem 1rem;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
+  overflow: hidden !important; /* Make sidebar non-scrollable */
+  transition: none !important; /* Prevent unwanted animations on desktop */
+  z-index: 1000 !important; /* Ensure it stays on top */
+  box-sizing: border-box;
+  contain: strict; /* Prevent any layout reflow */
+  will-change: transform; /* Optimize transforms */
+}
+
+.brand {
+  color: white;
+  text-align: center;
+  padding: 1rem 0 2rem;
+  font-size: 1.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  border-radius: 4px;
+  margin: 0.25rem 0;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-btn .icon {
+  margin-right: 0.75rem;
+}
+
+/* Topbar */
+.topbar {
+  background: white;
+  padding: 0.8rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 70px;
+  color: white;
+  border: none;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  width: 24px;
+  height: 18px;
+  justify-content: space-between;
+}
+
+.hamburger span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: white;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+/* Sidebar Backdrop for Mobile */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Button Styles */
+button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: var(--secondary-color);
+}
+
+/* Forms */
+input, textarea, select {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+
+/* Utility Classes */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.p-4 { padding: 1rem; }
+
+/* Dashboard Styles */
+.dashboard {
+  width: 100%;
+  padding: 1rem;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.card-icon {
+  font-size: 1.8rem;
+  margin-right: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+/* Weather Card */
+.weather-main {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.temperature {
+  font-size: 3rem;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.weather-desc {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.weather-details {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.weather-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Progress Bars */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.progress-item span:first-child {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.3rem 0;
+}
+
+.progress {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.5s ease;
+}
+
+.progress.success {
+  background: #4caf50;
+}
+
+/* Yield Prediction */
+.yield-prediction {
+  text-align: center;
+}
+
+.yield-amount {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 1rem 0;
+}
+
+.yield-amount span {
+  font-size: 1rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.confidence {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.confidence-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.confidence-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.yield-trend {
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.yield-trend.up {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+/* Market Prices */
+.price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.price-item:last-child {
+  border-bottom: none;
+}
+
+.price-item .crop {
+  flex: 1;
+  font-weight: 500;
+}
+
+.price-item .price {
+  margin: 0 1rem;
+  font-weight: 500;
+}
+
+.price-item .trend {
+  width: 50px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.price-item.up .trend {
+  color: #4caf50;
+}
+
+.price-item.down .trend {
+  color: #f44336;
+}
+
+/* AI Suggestions */
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-icon {
+  font-size: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+.suggestion-text {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content-column {
+    margin-left: 0;
+    margin-top: 60px; /* Height of mobile header */
+  }
+  
+  .mobile-menu-btn {
+    display: block;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-backdrop {
+    display: block;
+  }
+  
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 998;
+  }
+  
+  .content-area {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .page-title {
+    font-size: 1.4rem;
+  }
+}
+
+/* Desktop-specific styles to ensure stability */
+@media (min-width: 769px) {
+  .sidebar {
+    transform: translateX(0) !important;
+    transition: none !important;
+    position: fixed !important;
+    width: var(--sidebar-width) !important;
+    left: 0 !important;
+  }
+  
+  .sidebar-backdrop {
+    display: none !important;
+  }
+  
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  
+  .content-column {
+    margin-left: var(--sidebar-width) !important;
+    width: calc(100vw - var(--sidebar-width)) !important;
+  }
+  
+  .app-shell {
+    overflow-x: hidden !important;
+  }
+}
+
+/* Future Features Page Styles */
+.future {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  contain: content; /* Prevent content reflow */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.future h1 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+.future .subtitle {
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tabs button:hover {
+  color: var(--primary-color);
+  background: rgba(46, 125, 50, 0.05);
+}
+
+.tabs button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: rgba(46, 125, 50, 0.1);
+}
+
+.tab-content {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.crop-prediction, .weather-forecast, .market-trends {
+  width: 100%;
+  max-width: 100%;
+}
+
+.prediction-card {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.prediction-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.predict-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.3s ease;
+  width: auto;
+  min-width: 150px;
+}
+
+.predict-button:hover {
+  background: var(--secondary-color);
+}
+
+.predict-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.prediction-result {
+  background: #f8f9fa;
+  border-left: 4px solid var(--primary-color);
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border-radius: 4px;
+}
+
+.crop-name {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.confidence {
+  color: #666;
+  margin: 0.5rem 0;
+}
+
+.result-details {
+  margin-top: 1rem;
+}
+
+.detail-item {
+  margin-bottom: 0.5rem;
+}
+
+.detail-item .label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+/* Critical fix for navbar expansion issue */
+/* Force layout stability when navigating to any page */
+.app-shell {
+  position: relative;
+  contain: layout;
+}
+
+/* Ensure sidebar maintains exact dimensions */
+body:has(.future) .sidebar,
+body:has([data-page="future"]) .sidebar {
+  width: var(--sidebar-width) !important;
+  min-width: var(--sidebar-width) !important;
+  max-width: var(--sidebar-width) !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.detail-item .value {
+  color: #666;
+}

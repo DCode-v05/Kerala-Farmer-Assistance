@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "farmer_id": 1,
+    "topic": "Pest",
+    "question": "How to control aphids on my coconut trees?",
+    "contact_phone": "+91-9876543210",
+    "contact_email": "farmer@example.com",
+    "status": "submitted",
+    "created_at": "2025-09-29T12:44:02.534590"
+  }
+]

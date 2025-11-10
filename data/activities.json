@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "farmer_id": 1,
+    "activity_type": "Pesticide Spray",
+    "notes": "Applied neem oil solution on coconut trees to control aphids",
+    "created_at": "2025-09-29T12:44:02.536249"
+  }
+]
