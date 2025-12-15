@@ -88,10 +88,10 @@ const ChatWidget = () => {
   const handleVoiceMessage = async (formData) => {
     setIsProcessingVoice(true);
     
-    // Step 1: Add a loading message for speech-to-text
+    // Add a loading message
     const loadingMessage = {
       id: messages.length + 1,
-      text: '🎤 മലയാളം സംസാരം ഇംഗ്ലീഷ് ടെക്സ്റ്റാക്കി മാറ്റുന്നു...',
+      text: '🎤 വോയ്സ് മെസേജ് പ്രോസസ്സിംഗ് ചെയ്യുന്നു...',
       sender: 'system',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
@@ -99,166 +99,93 @@ const ChatWidget = () => {
     setMessages(prev => [...prev, loadingMessage]);
 
     try {
-      // STEP 1: Malayalam speech → English text
-      const speechToTextResponse = await fetch('http://localhost:5000/api/translate-speech-to-text', {
+      // Call the complete voice pipeline
+      const response = await fetch('http://localhost:5000/api/voice/complete-pipeline', {
         method: 'POST',
         credentials: 'include',
         body: formData
       });
 
-      const speechData = await speechToTextResponse.json();
+      const data = await response.json();
       
       // Remove loading message
       setMessages(prev => prev.slice(0, -1));
       
-      if (!speechData.success) {
+      if (data.success) {
+        // Add user's transcribed message
+        const userMessage = {
+          id: messages.length + 1,
+          text: `🎤 "${data.farmer_input}"`,
+          sender: 'user',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        
+        // Add AI response
+        const aiMessage = {
+          id: messages.length + 2,
+          text: data.gemini_response,
+          sender: 'ai',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          hasAudio: data.audio_response,
+          isVoiceResponse: true
+        };
+        
+        setMessages(prev => [...prev, userMessage, aiMessage]);
+        
+        // If audio response is available, play it
+        if (data.audio_response) {
+          try {
+            // Get the audio file
+            const audioResponse = await fetch('http://localhost:5000/api/translate-text-to-speech', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                text: data.gemini_response
+              })
+            });
+            
+            if (audioResponse.ok) {
+              const audioBlob = await audioResponse.blob();
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const audio = new Audio(audioUrl);
+              
+              audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+              };
+              
+              // Auto-play the response (if browser allows)
+              audio.play().catch(e => {
+                console.log('Auto-play blocked by browser:', e);
+              });
+            }
+          } catch (audioError) {
+            console.error('Error playing response audio:', audioError);
+          }
+        }
+        
+      } else {
         const errorMessage = {
           id: messages.length + 1,
-          text: speechData.error || 'സംസാരം ടെക്സ്റ്റാക്കി മാറ്റുന്നതിൽ പിശക്.',
+          text: data.error || 'വോയ്സ് മെസേജ് പ്രോസസ്സിംഗിൽ പിശക്. വീണ്ടും ശ്രമിക്കുക.',
           sender: 'ai',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
-        setMessages(prev => [...prev, errorMessage]);
-        return;
-      }
-
-      // Display the English text converted from Malayalam speech
-      const userMessage = {
-        id: messages.length + 1,
-        text: `🎤 "${speechData.english_text}"`,
-        sender: 'user',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      setMessages(prev => [...prev, userMessage]);
-
-      // STEP 2: Add loading message for AI response
-      const aiLoadingMessage = {
-        id: messages.length + 2,
-        text: 'AI പ്രതികരണം തയ്യാറാക്കുന്നു...',
-        sender: 'system',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      setMessages(prev => [...prev, aiLoadingMessage]);
-
-      // STEP 2: Get AI response for the English text
-      const chatResponse = await fetch('http://localhost:5000/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          message: speechData.english_text,
-          language: 'en'
-        })
-      });
-
-      const chatData = await chatResponse.json();
-      
-      // Remove AI loading message
-      setMessages(prev => prev.slice(0, -1));
-      
-      if (!chatData.success) {
-        const errorMessage = {
-          id: messages.length + 2,
-          text: 'AI പ്രതികരണത്തിൽ പിശക്. വീണ്ടും ശ്രമിക്കുക.',
-          sender: 'ai',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setMessages(prev => [...prev, errorMessage]);
-        return;
-      }
-
-      // Display the English AI response
-      const aiMessage = {
-        id: messages.length + 2,
-        text: chatData.response.text,
-        sender: 'ai',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      setMessages(prev => [...prev, aiMessage]);
-
-      // STEP 3: Add loading message for text-to-speech
-      const ttsLoadingMessage = {
-        id: messages.length + 3,
-        text: 'മലയാളം സംസാരമാക്കി മാറ്റുന്നു...',
-        sender: 'system',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      setMessages(prev => [...prev, ttsLoadingMessage]);
-
-      // STEP 3: Convert English response to Malayalam speech
-      const ttsResponse = await fetch('http://localhost:5000/api/translate-text-to-speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          text: chatData.response.text
-        })
-      });
-
-      // Remove TTS loading message
-      setMessages(prev => prev.slice(0, -1));
-
-      if (ttsResponse.ok) {
-        // Play the Malayalam speech response
-        try {
-          const audioBlob = await ttsResponse.blob();
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          
-          audio.onended = () => {
-            URL.revokeObjectURL(audioUrl);
-          };
-          
-          // Auto-play the Malayalam response
-          audio.play().catch(e => {
-            console.log('Auto-play blocked by browser:', e);
-            // Add a message if auto-play is blocked
-            const playMessage = {
-              id: messages.length + 3,
-              text: '🔊 മലയാളം ഓഡിയോ പ്രതികരണം തയ്യാർ. പ്ലേ ബട്ടൺ ക്ലിക്ക് ചെയ്യുക.',
-              sender: 'system',
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            setMessages(prev => [...prev, playMessage]);
-          });
-          
-        } catch (audioError) {
-          console.error('Error playing response audio:', audioError);
-          const audioErrorMessage = {
-            id: messages.length + 3,
-            text: 'ഓഡിയോ പ്ലേ ചെയ്യുന്നതിൽ പിശക്.',
-            sender: 'system',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          };
-          setMessages(prev => [...prev, audioErrorMessage]);
-        }
-      } else {
-        const ttsErrorMessage = {
-          id: messages.length + 3,
-          text: 'മലയാളം സംസാരമാക്കി മാറ്റുന്നതിൽ പിശക്.',
-          sender: 'system',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setMessages(prev => [...prev, ttsErrorMessage]);
-      }
         
+        setMessages(prev => [...prev, errorMessage]);
+      }
+      
     } catch (error) {
       console.error('Voice message error:', error);
       
-      // Remove any loading message
-      setMessages(prev => prev.filter(msg => msg.sender !== 'system'));
+      // Remove loading message
+      setMessages(prev => prev.slice(0, -1));
       
       const errorMessage = {
         id: messages.length + 1,
-        text: 'വോയ്സ് മെസേജ് പ്രോസസ്സിംഗിൽ പിശക്. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുക.',
+        text: 'വോയ്സ് മെസേജ് അയയ്ക്കുന്നതിൽ പിശക്. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുക.',
         sender: 'ai',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -356,9 +283,9 @@ const ChatWidget = () => {
       <style jsx>{`
         /* Floating Chat Icon */
         .chat-icon {
-          position: fixed !important;
-          bottom: 30px !important;
-          left: 30px !important;
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
           width: 60px;
           height: 60px;
           background: #27ae60;
@@ -368,7 +295,7 @@ const ChatWidget = () => {
           justify-content: center;
           cursor: pointer;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-          z-index: 1000 !important;
+          z-index: 1000;
           transition: all 0.3s ease;
         }
 
@@ -384,9 +311,9 @@ const ChatWidget = () => {
 
         /* Chat Container */
         .chat-container {
-          position: fixed !important;
-          bottom: 100px !important;
-          left: 30px !important;
+          position: fixed;
+          bottom: 100px;
+          right: 30px;
           width: 350px;
           height: 500px;
           background: white;
@@ -399,7 +326,7 @@ const ChatWidget = () => {
           opacity: 0;
           visibility: hidden;
           transition: all 0.3s ease;
-          z-index: 999 !important;
+          z-index: 999;
         }
 
         .chat-container.open {
@@ -419,7 +346,7 @@ const ChatWidget = () => {
 
         .chat-header h3 {
           margin: 0;
-          font-size: 1.2rem;
+          font-size: 1rem;
           font-weight: 500;
         }
 
@@ -444,33 +371,11 @@ const ChatWidget = () => {
         /* Messages */
         .messages {
           flex: 1;
-          overflow-y: auto !important;
-          overflow-x: hidden;
+          overflow-y: auto;
           padding: 1rem;
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
-          max-height: calc(100% - 120px); /* Account for header and input */
-          scrollbar-width: thin;
-          scrollbar-color: #27ae60 #f1f1f1;
-        }
-
-        .messages::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .messages::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 3px;
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-          background: #27ae60;
-          border-radius: 3px;
-        }
-
-        .messages::-webkit-scrollbar-thumb:hover {
-          background: #219a52;
         }
 
         .message {
@@ -486,17 +391,12 @@ const ChatWidget = () => {
           margin-right: auto;
         }
 
-        .message.system {
-          margin: 0 auto;
-          text-align: center;
-        }
-
         .message-content {
           padding: 0.75rem 1rem;
           border-radius: 15px;
           display: inline-block;
           word-wrap: break-word;
-          font-size: 1rem;
+          font-size: 0.9rem;
         }
 
         .user .message-content {
@@ -509,14 +409,6 @@ const ChatWidget = () => {
           background: #f1f1f1;
           color: #333;
           border-bottom-left-radius: 5px;
-        }
-
-        .system .message-content {
-          background: #e3f2fd;
-          color: #1976d2;
-          border-radius: 15px;
-          font-style: italic;
-          font-size: 0.85rem;
         }
 
         .message-time {
@@ -539,7 +431,7 @@ const ChatWidget = () => {
           padding: 0.75rem 1rem;
           border: 1px solid #ddd;
           border-radius: 25px;
-          font-size: 1rem;
+          font-size: 0.9rem;
           margin-right: 0.5rem;
           outline: none;
         }
